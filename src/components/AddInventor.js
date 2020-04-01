@@ -25,16 +25,16 @@ class AddInventory extends React.Component {
     axios.post("products", product).then(res => {
       console.log(res.data);
       this.props.close(res.data);
-      toast.success('Add Success');
+      toast.success("Add Success");
     });
   };
 
   //showToast = () => {
-      //toast('default');
-      //toast.info('info');
-      //toast.success('success');
-      //toast.warning('warning');
-      //toast.error('error');
+  //toast('default');
+  //toast.info('info');
+  //toast.success('success');
+  //toast.warning('warning');
+  //toast.error('error');
   //}
 
   render() {
@@ -101,10 +101,10 @@ class AddInventory extends React.Component {
                   <option>available</option>
                   <option>unavailable</option>
                 </select>
-                <br />
               </div>
             </div>
           </div>
+          <br />
           <div className="field is-grouped is-grouped-centered">
             <div className="control">
               <button className="button is-link">Submit</button>
