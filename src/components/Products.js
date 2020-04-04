@@ -11,22 +11,22 @@ class Products extends React.Component {
     //prodcuts經過篩選會更動，必須另外設sourcePooducts來提供完整資料對照更動後的資料
     products: [],
     sourcePooducts: [],
-    cartNum: 0
+    cartNum: 0,
   };
 
   toadd = () => {
     Panel.open({
       component: AddInventory,
-      callback: data => {
+      callback: (data) => {
         if (data) {
           this.add(data);
         }
         console.log(data);
-      }
+      },
     });
   };
 
-  add = product => {
+  add = (product) => {
     const _products = [...this.state.products];
     _products.push(product);
     const _sourcePooducts = [...this.state.sourcePooducts];
@@ -34,49 +34,51 @@ class Products extends React.Component {
 
     this.setState({
       products: _products,
-      sourcePooducts: _sourcePooducts
+      sourcePooducts: _sourcePooducts,
     });
   };
 
-  update = product => {
+  update = (product) => {
     const _products = [...this.state.products];
-    const _index = _products.findIndex(p => p.id === product.id);
+    const _index = _products.findIndex((p) => p.id === product.id);
     _products.splice(_index, 1, product);
     const _sourcePooducts = [...this.state.sourcePooducts];
-    const _sindex = _products.findIndex(p => p.id === product.id);
+    const _sindex = _products.findIndex((p) => p.id === product.id);
     _sourcePooducts.splice(_sindex, 1, product);
 
     this.setState({
       products: _products,
-      sourcePooducts: _sourcePooducts
+      sourcePooducts: _sourcePooducts,
     });
   };
 
-  delete = id => {
-    const _products = this.state.products.filter(p => p.id !== id);
-    const _sourcePooducts = this.state.sourcePooducts.filter(p => p.id !== id);
+  delete = (id) => {
+    const _products = this.state.products.filter((p) => p.id !== id);
+    const _sourcePooducts = this.state.sourcePooducts.filter(
+      (p) => p.id !== id
+    );
     this.setState({
       products: _products,
-      sourcePooducts: _sourcePooducts
+      sourcePooducts: _sourcePooducts,
     });
   };
 
   componentDidMount() {
-    axios.get("/products").then(response => {
+    axios.get("/products").then((response) => {
       this.setState({
         products: response.data,
-        sourcePooducts: response.data
+        sourcePooducts: response.data,
       });
     });
     this.updateCartNum();
   }
 
-  search = text => {
+  search = (text) => {
     //1.拿一個新的陣列，var、let宣告可改變，const不可變
     let _products = [...this.state.sourcePooducts];
 
     //2.篩選條件丟出篩選過後的資料
-    _products = _products.filter(p => {
+    _products = _products.filter((p) => {
       //name : Abcd text : ab 結果回傳 ['Ab']
       //text :'' 回傳 ["","","","",""]
       const matchArray = p.name.match(new RegExp(text, "gi"));
@@ -84,22 +86,27 @@ class Products extends React.Component {
     });
     //3.根據骰選回傳值設定新的state
     this.setState({
-      products: _products
+      products: _products,
     });
   };
 
   updateCartNum = async () => {
     const cartNum = await this.initCartNum();
     this.setState({
-      cartNum: cartNum
+      cartNum: cartNum,
     });
   };
 
   initCartNum = async () => {
-    const res = await axios.get("/carts");
+    const user = global.auth.getUser() || {};
+    const res = await axios.get("/carts", {
+      params: {
+        userId: user.email,
+      },
+    });
     const carts = res.data || [];
     const cartNum = carts
-      .map(cart => cart.mount)
+      .map((cart) => cart.mount)
       .reduce((a, value) => a + value, 0);
     return cartNum;
   };
@@ -111,7 +118,7 @@ class Products extends React.Component {
         <div className="products">
           <div className="columns is-multiline is-desktop">
             <TransitionGroup component={null}>
-              {this.state.products.map(p => {
+              {this.state.products.map((p) => {
                 return (
                   <CSSTransition
                     classNames="product-fade"
@@ -131,9 +138,11 @@ class Products extends React.Component {
               })}
             </TransitionGroup>
           </div>
-          <button className="button is-primary add-btn" onClick={this.toadd}>
-            add
-          </button>
+          {(global.auth.getUser() || {}).type === 1 && (
+            <button className="button is-primary add-btn" onClick={this.toadd}>
+              add
+            </button>
+          )}
         </div>
       </div>
     );

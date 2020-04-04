@@ -1,4 +1,5 @@
 import React from "react";
+import { withRouter } from "react-router-dom";
 import axios from "commons/axios";
 import { toast } from "react-toastify";
 import Panel from "components/Panel";
@@ -10,22 +11,26 @@ class Product extends React.Component {
       component: EditInventor,
       props: {
         product: this.props.products,
-        deleteProduct: this.props.delete
+        deleteProduct: this.props.delete,
       },
-      callback: data => {
+      callback: (data) => {
         if (data) {
           this.props.update(data);
         }
-      }
+      },
     });
   };
 
   addCart = async () => {
+    if (!global.auth.isLogin()) {
+      this.props.history.push("/login");
+      toast.info("Please Login First");
+      return;
+    }
     try {
+      const user = global.auth.getUser() || {};
       const { id, name, image, price } = this.props.products;
-
       const res = await axios.get(`/carts?productId=${id}`);
-
       const carts = res.data;
       if (carts && carts.length > 0) {
         const cart = carts[0];
@@ -37,7 +42,8 @@ class Product extends React.Component {
           name,
           image,
           price,
-          mount: 1
+          mount: 1,
+          userId: user.email
         };
         await axios.post("/carts", cart);
       }
@@ -47,20 +53,30 @@ class Product extends React.Component {
       toast.success("Add Cart Failed");
     }
   };
+
+  renderMangerBtn = () => {
+    const user = global.auth.getUser() || {};
+    if (user.type === 1) {
+      return (
+        <div className="p-head has-text-right" onClick={this.toEdit}>
+          <span className="icon edit-btn">
+            <i className="fas fa-sliders-h"></i>
+          </span>
+        </div>
+      );
+    }
+  };
+
   render() {
     const _pClass = {
       available: "product",
-      unavailable: "product out-stock"
+      unavailable: "product out-stock",
     };
     const { name, image, tags, price, status } = this.props.products;
     return (
       <div className={_pClass[status]}>
         <div className="p-content">
-          <div className="p-head has-text-right" onClick={this.toEdit}>
-            <span className="icon edit-btn">
-              <i className="fas fa-sliders-h"></i>
-            </span>
-          </div>
+        {this.renderMangerBtn()}
           <div className="img-wrapper">
             <div className="out-stock-text">OUT OF STOCK</div>
             <figure className="image is-4by3">
@@ -86,4 +102,4 @@ class Product extends React.Component {
   }
 }
 
-export default Product;
+export default withRouter(Product);
